@@ -1,0 +1,11 @@
+{
+  "name": "aws-region-resolver",
+  "version": "1.0.0",
+  "description": "Resolve AWS Regions based on IP",
+  "main": "lib/index.js",
+  "scripts": {
+    "test": "mocha"
+  },
+  "author": "John Ford <jhford@mozilla.com>",
+  "license": "MPL-2.0"
+}
