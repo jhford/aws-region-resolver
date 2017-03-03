@@ -55,16 +55,9 @@ class AWSRegionResolver extends events.EventEmitter {
   constructor(opts) {
     opts = opts || {};
     super();
-    // A function which returns a function which returns a promise which
-    // fetches the JSON in AWS Format
     this.fetcher = opts.fetcher || ipFetcher();
-    // Number of minutes to refresh
-    this.interval = opts.interval || 10;
-
-    // The service or list of servies to include, 'AMAZON' for all
+    this.interval = opts.interval || 10 * 60 * 1000;
     this.service = opts.service ? opts.service.toUpperCase() : 'AMAZON';
-
-    // Initialize internal state
     this.__keepGoing = false;
     this.__timeout = null;
     this.__ips = null;
@@ -186,7 +179,7 @@ class AWSRegionResolver extends events.EventEmitter {
         debug('Error Updating IPs: ' + err.stack || err);
         this.emit('error', err);
       }
-    }, addDelay ? this.interval * 1000 * 60 : 0);
+    }, addDelay ? this.interval: 0);
   }
 
 }

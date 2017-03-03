@@ -30,6 +30,24 @@ describe('AWSRegionResolver', () => {
     assert(resolver.__ipv6Prefixes.length > 1);
   });
 
+  it('should fetch updates', done => {
+    let iterations = 0;
+    resolver.interval = 1;
+
+    resolver.on('error', done);
+    
+    resolver.on('completed-update', () => {
+      iterations++;
+      if (iterations > 5) {
+        resolver.on('stopped', () => {done()});
+        resolver.stop();
+      }
+    });
+
+    resolver.start();
+
+  });
+
   for (let ip of ['104.16.40.2', '2400:cb00:2048:1::6810:2902']) {
     it('should throw for non-AWS IP: ' + ip, done => {
       try {
