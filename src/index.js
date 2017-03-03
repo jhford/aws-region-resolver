@@ -25,6 +25,9 @@ function ipFetcher (resource) {
       request.on('error', reject);
 
       request.on('response', response => {
+        if (response.statusCode < 200 || response.statusCode >=300) {
+          reject(new Error('Expected 200 series response'));
+        }
         let body = [];
         response.on('data', data => {
           try {

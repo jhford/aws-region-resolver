@@ -1,6 +1,26 @@
-import {AWSRegionResolver} from '../lib/index';
+import {AWSRegionResolver, ipFetcher} from '../lib/index';
 import assert from 'assert';
 import fs from 'fs';
+
+describe('ipFetcher', () => {
+  it('should fetch the ip prefix list', async () => {
+    let result = await ipFetcher()();
+    assert(result.ipv6_prefixes);
+    assert(result.prefixes);
+    console.dir(result);
+  });
+
+  it('should throw on failure', done => {
+    let result = ipFetcher('https://httpbin.org/status/400')();
+    result.then(() => {done(new Error())}, (err) => {
+      if (/Expected 200 series response/.test(err.message)) {
+        done();
+      } else {
+        done(err);
+      }
+    });
+  });
+});
 
 describe('AWSRegionResolver', () => {
   let resolver = new AWSRegionResolver({
