@@ -61,12 +61,8 @@ class AWSRegionResolver extends events.EventEmitter {
     // Number of minutes to refresh
     this.interval = opts.interval || 10;
 
-    // The service or list of servies to include
-    let services = opts.services || [];
-    if (typeof services === 'string') {
-      services = [services];
-    }
-    this.services = services;
+    // The service or list of servies to include, 'AMAZON' for all
+    this.service = opts.service ? opts.service.toUpperCase() : 'AMAZON';
 
     // Initialize internal state
     this.__keepGoing = false;
@@ -133,34 +129,27 @@ class AWSRegionResolver extends events.EventEmitter {
   
     for (let prefix of prefixList) {
       if (addr.match(prefix.prefix)) {
-        return prefix;
+        return {
+          service: prefix.service,
+          region: prefix.region,
+        };
       }
     }
 
-    throw new Error('IP is not in AWS ' + this.services.join(', '));
+    throw new Error('IP is not in ' + this.service);
   }
 
   __processFile() {
-    this.__ipv4Prefixes = this.__ips.prefixes.filter(prefix => {
-      if (this.services.length === 0) {
-        return true;
-      } else {
-        return this.services.indexOf(prefix.service);
-      }
-    }).map(prefix => {
+    this.__ipv4Prefixes = this.__ips.prefixes.filter(prefix => prefix.service === this.service)
+    .map(prefix => {
       return {
         service: prefix.service,
         region: prefix.region,
         prefix: ipaddr.parseCIDR(prefix.ip_prefix),
     }});
 
-    this.__ipv6Prefixes = this.__ips.ipv6_prefixes.filter(prefix => {
-      if (this.services.length === 0) {
-        return true;
-      } else {
-        return this.services.indexOf(prefix.service);
-      }
-    }).map(prefix => {
+    this.__ipv6Prefixes = this.__ips.ipv6_prefixes.filter(prefix => prefix.service === this.service)
+      .map(prefix => {
       return {
         service: prefix.service,
         region: prefix.region,
@@ -169,8 +158,8 @@ class AWSRegionResolver extends events.EventEmitter {
 
     let summary = [
       `Processed ${this.__ips.prefixes.length} into `,
-      `${this.__ipv4Prefixes.length} IPv4 prefixes and `,
-      `${this.__ipv6Prefixes.length} IPv6 prefixes`,
+      `${this.__ipv4Prefixes.length} IPv4 ${this.service} prefixes and `,
+      `${this.__ipv6Prefixes.length} IPv6 ${this.service} prefixes`,
     ].join('');
 
     debug(summary);
